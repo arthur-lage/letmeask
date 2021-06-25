@@ -1,23 +1,20 @@
-<img src="./src/assets/images/logo.svg" align="center"/>
+<h1 align="center">
+    <img alt="Letmeask" width="220px" src="./src/assets/images/logo.svg"/>
+</h1>
 
 ## Table of Contents
 
 - [About](#about)
-- [Getting Started](#getting_started)
 - [Usage](#usage)
 - [Prerequisites](#prerequisites)
 - [Used Technologies]("#used_technologies")
 - [Installing]("#installing")
 - [Usage]("#usage")
 
-## About <a name = "about"></a>
+## 💻 About <a name = "about"></a>
 
 A Question & Answer application that lets you create a room and share it with other people.
-
-
-## Getting Started <a name = "getting_started"></a>
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
+Created during the sixth edition of the NextLevelWeek event, from Rocketseat.
 
 ### Prerequisites <a name = "prerequisites"></a>
 
@@ -28,7 +25,7 @@ NodeJS
 Yarn or NPM
 ```
 
-### Used technologies <a name = "used_technologies"></a>
+### 🚀 Used technologies <a name = "used_technologies"></a>
 
 ``` bash
 HTML

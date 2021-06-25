@@ -5,7 +5,6 @@
 ## Table of Contents
 
 - [About](#about)
-- [Usage](#usage)
 - [Prerequisites](#prerequisites)
 - [Used Technologies]("#used_technologies")
 - [Installing]("#installing")

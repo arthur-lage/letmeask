@@ -29,7 +29,7 @@ Yarn or NPM
 ``` bash
 HTML
 
-CSS
+SCSS
 
 JavaScript
 

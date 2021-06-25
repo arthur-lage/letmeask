@@ -7,7 +7,7 @@ import answerImg from "../assets/images/answer.svg";
 
 import { Button } from "../components/Button";
 import { Question } from "../components/Question";
-import Modal from 'react-modal';
+import Modal from "react-modal";
 import { RoomCode } from "../components/RoomCode";
 
 import { useRoom } from "../hooks/useRoom";
@@ -29,27 +29,27 @@ export function AdminRoom() {
   // const user = useAuth();
   const { title, questions } = useRoom(roomId);
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [hasEndedRoom, setHasEndedRoom] = useState(false)
+  const [isEndRoomModalOpen, setIsEndRoomModalOpen] = useState(false);
+  const [hasEndedRoom, setHasEndedRoom] = useState(false);
 
-  function showModal(){
-    setIsModalOpen(true)
+  function showEndRoomModal() {
+    setIsEndRoomModalOpen(true);
   }
 
-  function hideModal(){
-    setIsModalOpen(false)
+  function hideModal() {
+    setIsEndRoomModalOpen(false);
   }
 
-  function handleSetEndRoom(){
-    setHasEndedRoom(true)
+  function handleSetEndRoom() {
+    setHasEndedRoom(true);
   }
 
   async function handleEndRoom() {
-    if(!isModalOpen){
-      showModal()
+    if (!isEndRoomModalOpen) {
+      showEndRoomModal();
     }
 
-    if(isModalOpen && hasEndedRoom){
+    if (isEndRoomModalOpen && hasEndedRoom) {
       await database.ref(`rooms/${roomId}`).update({
         endedAt: new Date(),
       });
@@ -58,14 +58,11 @@ export function AdminRoom() {
     }
   }
 
-  Modal.setAppElement('#root')
+  Modal.setAppElement("#root");
 
-  async function handleDeleteQuestion(questionId: string) {
-    if (
-      window.confirm("Tem certeza de que você deseja deletar essa pergunta?")
-    ) {
-      await database.ref(`/rooms/${roomId}/questions/${questionId}`).remove();
-    }
+  async function handleDeleteQuestion(questionId: string){
+    if(window.confirm("Você realmente deseja deletar esta pergunta?"))
+    await database.ref(`/rooms/${roomId}/questions/${questionId}`).remove();
   }
 
   async function handleMarkAsAnswered(questionId: string) {
@@ -91,14 +88,25 @@ export function AdminRoom() {
               Encerrar sala
             </Button>
             <Modal
-              isOpen={isModalOpen}
+              isOpen={isEndRoomModalOpen}
               onRequestClose={hideModal}
               className="modal"
+              overlayClassName={"modal-overlay"}
             >
               <h3>Tem certeza de que você deseja encerrar a sala?</h3>
               <div className="modal-actions">
-                <button onClick={hideModal} className="modal-cancel">Cancelar</button>
-                <button onClick={() => {handleSetEndRoom(); handleEndRoom()}} className="modal-end">Encerrar sala</button>
+                <button onClick={hideModal} id="modal-cancel">
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    handleSetEndRoom();
+                    handleEndRoom();
+                  }}
+                  id="modal-end"
+                >
+                  Encerrar sala
+                </button>
               </div>
             </Modal>
           </div>
@@ -109,7 +117,8 @@ export function AdminRoom() {
           <h1>Sala {title}</h1>
           {questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
         </div>
-        <div className="question-list">
+        {questions.length > 0 ? (
+          <div className="question-list">
           {questions.map((question) => (
             <Question
               key={question.id}
@@ -142,15 +151,19 @@ export function AdminRoom() {
                   </button>
                 </>
               )}
-              <button
-                type="button"
-                onClick={() => handleDeleteQuestion(question.id)}
-              >
+              <button onClick={() => handleDeleteQuestion(question.id)} type="button">
                 <img src={deleteImg} alt="Remover pergunta" />
               </button>
             </Question>
           ))}
         </div>
+        ) : (
+          <p style={{ textAlign: "center", marginTop: '9rem' }}>Ainda não existem perguntas nessa sala!
+            <br />
+            <br />
+            Envie o código da sala para outras pessoas!
+          </p>
+        )}
       </main>
     </div>
   );

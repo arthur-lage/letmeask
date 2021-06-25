@@ -2,9 +2,12 @@ import { useHistory, useParams } from "react-router-dom";
 
 import logoImg from "../assets/images/logo.svg";
 import deleteImg from "../assets/images/delete.svg";
+import checkImg from "../assets/images/check.svg";
+import answerImg from "../assets/images/answer.svg";
 
 import { Button } from "../components/Button";
 import { Question } from "../components/Question";
+import Modal from 'react-modal';
 import { RoomCode } from "../components/RoomCode";
 
 import { useRoom } from "../hooks/useRoom";
@@ -12,28 +15,50 @@ import { useRoom } from "../hooks/useRoom";
 
 import "../styles/room.scss";
 import { database } from "../services/firebase";
+import { useState } from "react";
 
 type UseParamsType = {
   id: string;
 };
 
 export function AdminRoom() {
-  const history = useHistory()
-  
+  const history = useHistory();
+
   const params = useParams<UseParamsType>();
   const roomId = params.id;
   // const user = useAuth();
   const { title, questions } = useRoom(roomId);
 
-  async function handleEndRoom(){
-    if(window.confirm("Tem certeza de que você deseja encerrar a sala?")){
-      await database.ref(`rooms/${roomId}`).update({
-        endedAt: new Date()
-      })
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [hasEndedRoom, setHasEndedRoom] = useState(false)
+
+  function showModal(){
+    setIsModalOpen(true)
+  }
+
+  function hideModal(){
+    setIsModalOpen(false)
+  }
+
+  function handleSetEndRoom(){
+    setHasEndedRoom(true)
+  }
+
+  async function handleEndRoom() {
+    if(!isModalOpen){
+      showModal()
     }
 
-    history.push('/')
+    if(isModalOpen && hasEndedRoom){
+      await database.ref(`rooms/${roomId}`).update({
+        endedAt: new Date(),
+      });
+
+      history.push("/");
+    }
   }
+
+  Modal.setAppElement('#root')
 
   async function handleDeleteQuestion(questionId: string) {
     if (
@@ -43,6 +68,17 @@ export function AdminRoom() {
     }
   }
 
+  async function handleMarkAsAnswered(questionId: string) {
+    await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
+      isAnswered: true,
+    });
+  }
+
+  async function handleHighlightQuestion(questionId: string) {
+    await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
+      isHighlighted: true,
+    });
+  }
 
   return (
     <div id="page-room">
@@ -51,7 +87,20 @@ export function AdminRoom() {
           <img src={logoImg} alt="Letmeask" />
           <div>
             <RoomCode code={roomId} />
-            <Button isOutlined={true} onClick={handleEndRoom}>Encerrar sala</Button>
+            <Button isOutlined={true} onClick={handleEndRoom}>
+              Encerrar sala
+            </Button>
+            <Modal
+              isOpen={isModalOpen}
+              onRequestClose={hideModal}
+              className="modal"
+            >
+              <h3>Tem certeza de que você deseja encerrar a sala?</h3>
+              <div className="modal-actions">
+                <button onClick={hideModal} className="modal-cancel">Cancelar</button>
+                <button onClick={() => {handleSetEndRoom(); handleEndRoom()}} className="modal-end">Encerrar sala</button>
+              </div>
+            </Modal>
           </div>
         </div>
       </header>
@@ -66,7 +115,33 @@ export function AdminRoom() {
               key={question.id}
               content={question.content}
               author={question.author}
+              isAnswered={question.isAnswered}
+              isHighlighted={question.isHighlighted}
             >
+              {!question.isAnswered && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleMarkAsAnswered(question.id)}
+                  >
+                    <img
+                      className="answer"
+                      src={checkImg}
+                      alt="Marcar como respondida"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleHighlightQuestion(question.id)}
+                  >
+                    <img
+                      className="highlight"
+                      src={answerImg}
+                      alt="Destacar pergunta"
+                    />
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => handleDeleteQuestion(question.id)}

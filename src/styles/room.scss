@@ -71,6 +71,13 @@
         box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.4);
         resize: vertical;
         min-height: 130px;
+        outline: none;
+        transition: .2s ease;
+        border: 2px solid transparent;
+
+        &:focus{
+          border: 2px solid #835afd;
+        }
       }
 
       .form-footer {

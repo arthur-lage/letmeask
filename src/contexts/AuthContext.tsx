@@ -7,7 +7,6 @@ export const AuthContext = createContext({} as AuthContextType)
 type AuthContextProviderProps = {
     children: React.ReactNode
 }
-
       
 type User = {
     id: string;

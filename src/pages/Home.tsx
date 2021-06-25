@@ -9,6 +9,7 @@ import { useHistory } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { FormEvent, useState } from "react";
 import { database } from "../services/firebase";
+import toast, { Toaster } from "react-hot-toast";
 
 export function Home() {
   const [roomCode, setRoomCode] = useState("");
@@ -20,18 +21,19 @@ export function Home() {
     e.preventDefault();
 
     if (roomCode.trim() === "") {
+      toast.error("Por favor, utilize um código válido.")
       return;
     }
 
     const roomRef = await database.ref(`rooms/${roomCode}`).get();
 
     if (!roomRef.exists()) {
-      alert("Room doesn't exist.");
+      toast.error("Não foi possível achar uma sala com esse codigo.")
       return;
     }
-
+    
     if (roomRef.val().endedAt){
-      alert('Room already ended')
+      toast.error("Essa sala já foi encerrada.")
       return
     }
 
@@ -48,6 +50,7 @@ export function Home() {
 
   return (
     <div id="page-auth">
+      <Toaster />
       <aside>
         <img src={illustrationImg} alt="Ilustração Perguntas e Respostas" />
         <strong>Crie salas de Q&amp;A ao-vivo</strong>

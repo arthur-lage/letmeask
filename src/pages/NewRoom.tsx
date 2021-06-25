@@ -9,6 +9,7 @@ import { FormEvent, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { database } from "../services/firebase";
+import toast from "react-hot-toast";
 
 export function NewRoom() {
     const { user } = useAuth()
@@ -21,6 +22,7 @@ export function NewRoom() {
       e.preventDefault()
 
       if(newRoom.trim() === '') {
+        toast.error("Por favor, utilize um nome de sala válido!")
         return
       }
 

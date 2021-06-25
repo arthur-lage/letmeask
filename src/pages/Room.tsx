@@ -14,6 +14,9 @@ import { useAuth } from "../hooks/useAuth";
 
 import "../styles/room.scss";
 
+import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+
 type UseParamsType = {
   id: string;
 };
@@ -21,53 +24,74 @@ type UseParamsType = {
 export function Room() {
   const params = useParams<UseParamsType>();
   const roomId = params.id;
-  const user = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const { title, questions } = useRoom(roomId);
 
   const [newQuestion, setNewQuestion] = useState("");
+
+  console.log(user)
+
+  function handleLogin(){
+    signInWithGoogle()
+  }
 
   async function handleCreateNewQuestion(e: FormEvent) {
     e.preventDefault();
 
     if (newQuestion.trim() === "") {
+      toast.error("Você precisa digitar algo para perguntar");
       return;
     }
 
-    if (!user) {
-      throw new Error("Você precisar fazer login para fazer perguntas!");
+    try {
+      if (user) {
+        const question = {
+          content: newQuestion,
+          author: {
+            name: user?.name,
+            avatar: user?.avatar,
+          },
+          isHighlighted: false,
+          isAnswered: false,
+        };
+
+        await database.ref(`rooms/${roomId}/questions`).push(question);
+
+        toast.success("Pergunta criada com sucesso!");
+      }
+    } catch {
+      toast.error("Você precisa estar logado para fazer perguntas!");
     }
-
-    const question = {
-      content: newQuestion,
-      author: {
-        name: user.user?.name,
-        avatar: user.user?.avatar,
-      },
-      isHighlightted: false,
-      isAnswered: false,
-    };
-
-    await database.ref(`rooms/${roomId}/questions`).push(question);
 
     setNewQuestion("");
   }
 
-  async function handleLikeQuestion(questionId: string, likeId: string | undefined) {
-    if(likeId){
-      await database
-      .ref(`rooms/${roomId}/questions/${questionId}/likes/${likeId}`)
-      .remove()
-    } else {
-      await database
-      .ref(`rooms/${roomId}/questions/${questionId}/likes`)
-      .push({
-        authorId: user.user?.id,
-      });
+  async function handleLikeQuestion(
+    questionId: string,
+    likeId: string | undefined
+  ) {
+    try {
+      if (user) {
+        if (likeId) {
+          await database
+            .ref(`rooms/${roomId}/questions/${questionId}/likes/${likeId}`)
+            .remove();
+        } else {
+          await database
+            .ref(`rooms/${roomId}/questions/${questionId}/likes`)
+            .push({
+              authorId: user?.id,
+            });
+        }
+      }
+    } catch {
+      toast.error("Você precisar fazer login para dar like nas perguntas!");
     }
   }
 
   return (
     <div id="page-room">
+      <Toaster />
       <header>
         <div className="content">
           <img src={logoImg} alt="Letmeask" />
@@ -87,15 +111,15 @@ export function Room() {
           />
 
           <div className="form-footer">
-            {!user ? (
-              <span>
-                Para enviar uma pergunta, <button>faça seu login</button>
-              </span>
-            ) : (
+            {(user !== undefined) ? (
               <div className="user-info">
-                <img src={user.user?.avatar} alt="Avatar" />
-                <span>{user.user?.name}</span>
+                <img src={user?.avatar} alt="Avatar" />
+                <span>{user?.name}</span>
               </div>
+            ) : (
+              <span>
+                Para enviar uma pergunta, <button onClick={handleLogin}>faça seu login</button>
+              </span>
             )}
             <Button disabled={!user} type="submit">
               Enviar pergunta
@@ -109,12 +133,14 @@ export function Room() {
               key={question.id}
               content={question.content}
               author={question.author}
+              isAnswered={question.isAnswered}
+              isHighlighted={question.isHighlighted}
             >
               <button
                 onClick={() => handleLikeQuestion(question.id, question.likeId)}
                 type="button"
                 aria-label="Marcar como gostei"
-                className={`like-button ${question.likeId ? 'liked': ''}`}
+                className={`like-button ${question.likeId ? "liked" : ""}`}
               >
                 <svg
                   width="24"
@@ -131,7 +157,7 @@ export function Room() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                { question.likeCount > 0 && <span>{question.likeCount}</span> }
+                {question.likeCount > 0 && <span>{question.likeCount}</span>}
               </button>
             </Question>
           ))}
